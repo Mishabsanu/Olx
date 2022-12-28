@@ -1,10 +1,28 @@
-import React from 'react';
-
+import React,{useEffect,useContext,useState} from 'react';
+import { useHistory } from 'react-router-dom';
 import Heart from '../../assets/Heart';
+import { FirebaseContext } from '../../Store/Context';
+import { PostContext } from '../../Store/PostContext';
 import './Post.css';
 
 function Posts() {
 
+const {firebase} =useContext(FirebaseContext)
+const [products, setProducts] = useState([])
+const {setPostDetails} =useContext(PostContext)
+const history =useHistory()
+useEffect(()=>{
+  firebase.firestore().collection('products').get().then((snapshot)=>{
+    const allPost =snapshot.docs.map((product)=>{
+      return {
+        ...product.data(),
+        id:product.id
+      }
+    })
+    setProducts(allPost)
+  })
+
+},[])
   return (
     <div className="postParentDiv">
       <div className="moreView">
@@ -13,25 +31,37 @@ function Posts() {
           <span>View more</span>
         </div>
         <div className="cards">
-          <div
+          {products.map(product=>{
+            
+
+          
+            return<div
             className="card"
+            onClick={()=>{
+              setPostDetails(product)
+              history.push('/View')
+            }}
           >
             <div className="favorite">
               <Heart></Heart>
             </div>
             <div className="image">
-              <img src="../../../Images/R15V3.jpg" alt="" />
+              <img src={product.url} alt="" />
             </div>
             <div className="content">
-              <p className="rate">&#x20B9; 250000</p>
-              <span className="kilometer">Two Wheeler</span>
-              <p className="name"> YAMAHA R15V3</p>
+              <p className="rate">&#x20B9; {product.price}</p>
+              <span className="kilometer">{product.category}</span>
+              <p className="name"> {product.name}</p>
             </div>
             <div className="date">
-              <span>Tue May 04 2021</span>
+              <span>{product.createAt}</span>
             </div>
           </div>
+           })
+             }
+           
         </div>
+       
       </div>
       <div className="recommendations">
         <div className="heading">
